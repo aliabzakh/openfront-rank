@@ -1,0 +1,149 @@
+:root {
+  --bg: #f3f8f2;
+  --ink: #11231a;
+  --muted: #587067;
+  --card: #ffffff;
+  --line: #dbe9df;
+  --accent: #1b7f5d;
+  --accent-soft: #e8f5ef;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+  background:
+    radial-gradient(circle at 10% 10%, #e2efe7 0%, transparent 30%),
+    radial-gradient(circle at 90% 20%, #d8ece7 0%, transparent 25%),
+    var(--bg);
+  color: var(--ink);
+}
+
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 1.25rem;
+  display: grid;
+  gap: 1rem;
+}
+
+.hero h1 {
+  margin: 0;
+  font-size: 2rem;
+}
+
+.hero p {
+  margin-top: 0.35rem;
+  color: var(--muted);
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 1rem;
+}
+
+.card {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  padding: 1rem;
+}
+
+.card h2 {
+  margin-top: 0;
+}
+
+.row {
+  display: flex;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  align-items: end;
+}
+
+label {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  font-size: 0.92rem;
+}
+
+input,
+select,
+button {
+  font: inherit;
+}
+
+input,
+select {
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 0.55rem 0.6rem;
+  min-width: 150px;
+}
+
+button {
+  border: none;
+  border-radius: 8px;
+  background: var(--accent);
+  color: white;
+  padding: 0.6rem 0.85rem;
+  cursor: pointer;
+}
+
+button:hover {
+  filter: brightness(0.95);
+}
+
+.muted {
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+th,
+td {
+  border-bottom: 1px solid var(--line);
+  text-align: left;
+  padding: 0.55rem 0.3rem;
+  vertical-align: top;
+}
+
+th {
+  color: #2a473c;
+}
+
+.placements {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+  gap: 0.6rem;
+  margin-bottom: 0.8rem;
+}
+
+.placementItem {
+  background: var(--accent-soft);
+  border-radius: 8px;
+  padding: 0.5rem;
+}
+
+.placementItem label {
+  font-size: 0.85rem;
+}
+
+#adminCard.disabled {
+  opacity: 0.6;
+  pointer-events: none;
+}
+
+code {
+  background: #eef7f2;
+  border-radius: 4px;
+  padding: 0.1rem 0.35rem;
+}

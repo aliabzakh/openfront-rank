@@ -1,0 +1,123 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Open Front Rank</title>
+  <link rel="stylesheet" href="styles.css" />
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+</head>
+<body>
+  <main class="container">
+    <header class="hero">
+      <h1>Open Front Rank</h1>
+      <p>Track games, update rankings, and visualize player performance.</p>
+    </header>
+
+    <section class="card" id="setupNotice">
+      <h2>Setup</h2>
+      <p>
+        Add your Supabase keys in <code>app.js</code> first.
+      </p>
+    </section>
+
+    <section class="grid">
+      <article class="card">
+        <h2>Admin Access</h2>
+        <div class="row">
+          <input id="emailInput" type="email" placeholder="admin@email.com" />
+          <button id="sendMagicLinkBtn">Send Login Link</button>
+        </div>
+        <p class="muted" id="authStatus">Not signed in.</p>
+      </article>
+
+      <article class="card" id="adminCard">
+        <h2>Add Game</h2>
+        <form id="gameForm">
+          <div class="row">
+            <label>
+              Date
+              <input id="playedAt" type="date" required />
+            </label>
+            <label>
+              Map
+              <input id="mapName" type="text" placeholder="Map name" required />
+            </label>
+            <label>
+              Players In Game
+              <select id="participantCount"></select>
+            </label>
+          </div>
+
+          <label>
+            Replay URL
+            <input id="replayUrl" type="url" placeholder="https://..." />
+          </label>
+
+          <h3>Placements</h3>
+          <div id="placementsContainer" class="placements"></div>
+
+          <button type="submit">Save Game</button>
+          <p id="saveStatus" class="muted"></p>
+        </form>
+      </article>
+    </section>
+
+    <section class="grid">
+      <article class="card">
+        <h2>Leaderboard</h2>
+        <table id="leaderboardTable">
+          <thead>
+            <tr>
+              <th>Player</th>
+              <th>Games</th>
+              <th>Avg Score (Place/Players)</th>
+              <th>Avg Place</th>
+              <th>Wins</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </article>
+
+      <article class="card">
+        <h2>Average Score Trend</h2>
+        <canvas id="trendChart" height="180"></canvas>
+      </article>
+    </section>
+
+    <section class="card">
+      <h2>Who's Better Than Who</h2>
+      <table id="comparisonTable">
+        <thead>
+          <tr>
+            <th>Higher Rank</th>
+            <th>Lower Rank</th>
+            <th>Gap %</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+      <p class="muted">Formula: ((lower - higher) / higher) * 100</p>
+    </section>
+
+    <section class="card">
+      <h2>Recent Games</h2>
+      <table id="gamesTable">
+        <thead>
+          <tr>
+            <th>Date</th>
+            <th>Map</th>
+            <th>Replay</th>
+            <th>Results</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </section>
+  </main>
+
+  <script src="app.js"></script>
+</body>
+</html>
