@@ -47,16 +47,23 @@ create policy results_public_read on public.game_results
 for select to anon, authenticated
 using (true);
 
--- Only signed-in users can insert new matches.
+-- Only admin email can insert new matches.
 drop policy if exists games_insert_auth on public.games;
-create policy games_insert_auth on public.games
+drop policy if exists games_insert_admin on public.games;
+create policy games_insert_admin on public.games
 for insert to authenticated
-with check (true);
+with check (lower(coalesce((auth.jwt() ->> 'email'), '')) = 'aliabzakh77@gmail.com');
 
 drop policy if exists results_insert_auth on public.game_results;
-create policy results_insert_auth on public.game_results
+drop policy if exists results_insert_admin on public.game_results;
+create policy results_insert_admin on public.game_results
 for insert to authenticated
-with check (true);
+with check (lower(coalesce((auth.jwt() ->> 'email'), '')) = 'aliabzakh77@gmail.com');
+
+drop policy if exists players_insert_admin on public.players;
+create policy players_insert_admin on public.players
+for insert to authenticated
+with check (lower(coalesce((auth.jwt() ->> 'email'), '')) = 'aliabzakh77@gmail.com');
 
 -- Seed your 7 players.
 insert into public.players (name) values

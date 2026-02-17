@@ -15,10 +15,10 @@
       <p>Track games, update rankings, and visualize player performance.</p>
     </header>
 
-    <section class="card" id="setupNotice">
+    <section class="card" id="setupNotice" style="display:none;">
       <h2>Setup</h2>
       <p>
-        Add your Supabase keys in <code>app.js</code> first.
+        Supabase config is missing. Set keys in <code>app.js</code>.
       </p>
     </section>
 
@@ -26,8 +26,8 @@
       <article class="card">
         <h2>Admin Access</h2>
         <div class="row">
-          <input id="emailInput" type="email" placeholder="admin@email.com" />
-          <button id="sendMagicLinkBtn">Send Login Link</button>
+          <button id="openLoginBtn" type="button">Open Login Page</button>
+          <button id="signOutBtn" type="button">Sign Out</button>
         </div>
         <p class="muted" id="authStatus">Not signed in.</p>
       </article>
@@ -46,7 +46,7 @@
             </label>
             <label>
               Players In Game
-              <select id="participantCount"></select>
+              <input id="participantCount" type="number" min="2" step="1" required />
             </label>
           </div>
 
@@ -60,6 +60,20 @@
 
           <button type="submit">Save Game</button>
           <p id="saveStatus" class="muted"></p>
+        </form>
+
+        <hr />
+
+        <h3>Add New Player</h3>
+        <form id="playerForm">
+          <div class="row">
+            <label>
+              Player Name
+              <input id="newPlayerName" type="text" placeholder="New player name" required />
+            </label>
+            <button type="submit">Add Player</button>
+          </div>
+          <p id="playerSaveStatus" class="muted"></p>
         </form>
       </article>
     </section>

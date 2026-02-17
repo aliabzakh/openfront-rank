@@ -1,0 +1,95 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Open Front Rank - Login</title>
+  <link rel="stylesheet" href="styles.css" />
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body>
+  <main class="container" style="max-width:700px;">
+    <header class="hero">
+      <h1>Admin Login</h1>
+      <p>Sign in using magic link for <code>aliabzakh77@gmail.com</code>.</p>
+    </header>
+
+    <section class="card">
+      <h2>Email Login</h2>
+      <div class="row">
+        <label>
+          Admin Email
+          <input id="emailInput" type="email" value="aliabzakh77@gmail.com" />
+        </label>
+        <button id="sendMagicLinkBtn" type="button">Send Magic Link</button>
+      </div>
+      <p id="status" class="muted">Not signed in.</p>
+      <div class="row">
+        <a href="index.html"><button type="button">Go To Dashboard</button></a>
+        <button id="signOutBtn" type="button">Sign Out</button>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    const SUPABASE_URL = "https://agbdhsetpkozexgayypl.supabase.co";
+    const SUPABASE_ANON_KEY = "sb_publishable_G5yfHs7W1leSva8Pb8iDzg_01eNASv7";
+    const ADMIN_EMAIL = "aliabzakh77@gmail.com";
+
+    const statusEl = document.getElementById("status");
+    const emailInput = document.getElementById("emailInput");
+
+    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    async function refreshStatus() {
+      const { data, error } = await supabase.auth.getSession();
+      if (error) {
+        statusEl.textContent = `Auth error: ${error.message}`;
+        return;
+      }
+
+      const email = data.session?.user?.email?.toLowerCase();
+      if (!email) {
+        statusEl.textContent = "Not signed in.";
+      } else if (email === ADMIN_EMAIL) {
+        statusEl.textContent = `Signed in as admin: ${email}`;
+      } else {
+        statusEl.textContent = `Signed in as ${email}, but admin is ${ADMIN_EMAIL}.`;
+      }
+    }
+
+    document.getElementById("sendMagicLinkBtn").addEventListener("click", async () => {
+      const email = emailInput.value.trim().toLowerCase();
+      if (!email) {
+        statusEl.textContent = "Email is required.";
+        return;
+      }
+
+      const { error } = await supabase.auth.signInWithOtp({
+        email,
+        options: {
+          emailRedirectTo: `${window.location.origin}${window.location.pathname}`,
+        },
+      });
+
+      if (error) {
+        statusEl.textContent = `Failed to send link: ${error.message}`;
+        return;
+      }
+
+      statusEl.textContent = "Magic link sent. Open email and click link.";
+    });
+
+    document.getElementById("signOutBtn").addEventListener("click", async () => {
+      await supabase.auth.signOut();
+      await refreshStatus();
+    });
+
+    supabase.auth.onAuthStateChange(async () => {
+      await refreshStatus();
+    });
+
+    refreshStatus();
+  </script>
+</body>
+</html>

@@ -1,11 +1,12 @@
 # Open Front Rank (Supabase + Static Site)
 
 This starter gives you:
-- Admin login via Supabase magic link
-- Form to add a game (date, map, replay, variable player count, placements)
+- Admin login page via Supabase magic link (`login.html`)
+- Form to add a game (date, map, replay, typed player count, placements)
 - Live leaderboard table based on average `placement / players_in_game`
 - Average score trend chart
 - Adjacent-rank comparison table using percentage gap
+- Admin form to add new players
 - Recent games table
 
 ## 1) Create Supabase project
@@ -16,6 +17,7 @@ This starter gives you:
 ## 2) Enable auth email login
 1. In Supabase Auth settings, keep Email provider enabled.
 2. For production later, add your real Site URL + redirect URLs.
+3. Admin email is `aliabzakh77@gmail.com`.
 
 ## 3) Add Supabase keys
 Edit `app.js`:
@@ -32,6 +34,7 @@ If you have Node installed:
 npx serve .
 ```
 Then open the shown localhost URL.
+- Use `login.html` to sign in as admin.
 
 ## Scoring system
 Per game score is:
@@ -50,5 +53,7 @@ Comparison table formula (adjacent ranks):
 
 ## Notes
 - Public users can read leaderboard/game data.
-- Only authenticated users can insert new games/results.
-- If you want strict "admin-only" permissions, you can enforce it by checking a list of allowed admin emails in Row Level Security policies.
+- Only `aliabzakh77@gmail.com` can insert new games/results/players by RLS policy.
+
+## If you already ran an older schema
+Run `schema.sql` again so the admin-only policies are recreated.

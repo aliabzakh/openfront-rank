@@ -1,5 +1,6 @@
 const SUPABASE_URL = "https://agbdhsetpkozexgayypl.supabase.co";
 const SUPABASE_ANON_KEY = "sb_publishable_G5yfHs7W1leSva8Pb8iDzg_01eNASv7";
+const ADMIN_EMAIL = "aliabzakh77@gmail.com";
 
 let supabase;
 let trendChart;
@@ -9,13 +10,17 @@ const setupNotice = document.getElementById("setupNotice");
 const authStatus = document.getElementById("authStatus");
 const adminCard = document.getElementById("adminCard");
 const saveStatus = document.getElementById("saveStatus");
+const playerSaveStatus = document.getElementById("playerSaveStatus");
 
 const gameForm = document.getElementById("gameForm");
+const playerForm = document.getElementById("playerForm");
+const newPlayerNameInput = document.getElementById("newPlayerName");
 const placementsContainer = document.getElementById("placementsContainer");
-const sendMagicLinkBtn = document.getElementById("sendMagicLinkBtn");
-const participantCountSelect = document.getElementById("participantCount");
+const signOutBtn = document.getElementById("signOutBtn");
+const openLoginBtn = document.getElementById("openLoginBtn");
+const participantCountInput = document.getElementById("participantCount");
 
-if (SUPABASE_URL.startsWith("YOUR_") || SUPABASE_ANON_KEY.startsWith("YOUR_")) {
+if (!isSupabaseConfigured()) {
   adminCard.classList.add("disabled");
   setupNotice.style.display = "block";
 } else {
@@ -24,26 +29,43 @@ if (SUPABASE_URL.startsWith("YOUR_") || SUPABASE_ANON_KEY.startsWith("YOUR_")) {
   initialize();
 }
 
+function isSupabaseConfigured() {
+  if (!SUPABASE_URL || !SUPABASE_ANON_KEY) return false;
+  if (SUPABASE_URL.includes("YOUR_SUPABASE_URL")) return false;
+  if (SUPABASE_ANON_KEY.includes("YOUR_SUPABASE_ANON_KEY")) return false;
+  return true;
+}
+
 async function initialize() {
-  await checkSession();
   bindEvents();
+  await checkSession();
   await loadPlayers();
-  renderParticipantOptions();
+  resetParticipantCount();
   renderPlacementSelectors(getSelectedParticipantCount());
   await refreshDashboard();
 }
 
 function bindEvents() {
-  sendMagicLinkBtn.addEventListener("click", sendMagicLink);
   gameForm.addEventListener("submit", submitGame);
+  playerForm.addEventListener("submit", submitPlayer);
 
-  participantCountSelect.addEventListener("change", () => {
+  participantCountInput.addEventListener("input", () => {
     renderPlacementSelectors(getSelectedParticipantCount());
+  });
+
+  signOutBtn.addEventListener("click", signOut);
+  openLoginBtn.addEventListener("click", () => {
+    window.location.href = "login.html";
   });
 
   supabase.auth.onAuthStateChange((_event, session) => {
     updateAuthUI(session);
   });
+}
+
+function isAdminSession(session) {
+  const email = session?.user?.email?.toLowerCase() || "";
+  return email === ADMIN_EMAIL;
 }
 
 async function checkSession() {
@@ -56,28 +78,26 @@ async function checkSession() {
 }
 
 function updateAuthUI(session) {
-  if (session?.user) {
-    authStatus.textContent = `Signed in as ${session.user.email}`;
-    adminCard.classList.remove("disabled");
-  } else {
-    authStatus.textContent = "Not signed in. Admin form is locked.";
+  if (!session?.user) {
+    authStatus.textContent = "Not signed in. Use Login Page to sign in as admin.";
     adminCard.classList.add("disabled");
+    return;
   }
+
+  if (!isAdminSession(session)) {
+    authStatus.textContent = `Signed in as ${session.user.email}, but this is not the admin email.`;
+    adminCard.classList.add("disabled");
+    return;
+  }
+
+  authStatus.textContent = `Admin signed in: ${session.user.email}`;
+  adminCard.classList.remove("disabled");
 }
 
-async function sendMagicLink() {
-  const email = document.getElementById("emailInput").value.trim();
-  if (!email) {
-    authStatus.textContent = "Enter an email first.";
-    return;
-  }
-
-  const { error } = await supabase.auth.signInWithOtp({ email });
-  if (error) {
-    authStatus.textContent = `Failed to send login link: ${error.message}`;
-    return;
-  }
-  authStatus.textContent = "Magic link sent. Open your email and come back after login.";
+async function signOut() {
+  if (!supabase) return;
+  await supabase.auth.signOut();
+  authStatus.textContent = "Signed out.";
 }
 
 async function loadPlayers() {
@@ -95,23 +115,20 @@ async function loadPlayers() {
   players = data || [];
 }
 
-function renderParticipantOptions() {
-  participantCountSelect.innerHTML = "";
-
-  for (let count = 2; count <= players.length; count += 1) {
-    const option = document.createElement("option");
-    option.value = String(count);
-    option.textContent = String(count);
-    participantCountSelect.appendChild(option);
-  }
-
-  participantCountSelect.value = String(players.length);
+function resetParticipantCount() {
+  const max = Math.max(players.length, 2);
+  participantCountInput.min = "2";
+  participantCountInput.max = String(max);
+  participantCountInput.value = String(max);
 }
 
 function getSelectedParticipantCount() {
-  const value = Number(participantCountSelect.value);
-  if (!Number.isFinite(value) || value < 2) return players.length;
-  return value;
+  const parsed = Number.parseInt(participantCountInput.value, 10);
+  const max = Math.max(players.length, 2);
+  if (!Number.isFinite(parsed)) return max;
+  if (parsed < 2) return 2;
+  if (parsed > max) return max;
+  return parsed;
 }
 
 function renderPlacementSelectors(participantCount) {
@@ -142,14 +159,51 @@ function renderPlacementSelectors(participantCount) {
   }
 }
 
+async function ensureAdminOrFail(statusEl) {
+  const { data } = await supabase.auth.getSession();
+  if (!isAdminSession(data.session)) {
+    statusEl.textContent = `You must log in as ${ADMIN_EMAIL}.`;
+    return null;
+  }
+  return data.session;
+}
+
+async function submitPlayer(event) {
+  event.preventDefault();
+  playerSaveStatus.textContent = "";
+
+  const session = await ensureAdminOrFail(playerSaveStatus);
+  if (!session) return;
+
+  const name = newPlayerNameInput.value.trim();
+  if (!name) {
+    playerSaveStatus.textContent = "Player name is required.";
+    return;
+  }
+
+  playerSaveStatus.textContent = "Saving player...";
+
+  const { error } = await supabase.from("players").insert({ name, is_active: true });
+
+  if (error) {
+    playerSaveStatus.textContent = `Failed to add player: ${error.message}`;
+    return;
+  }
+
+  playerSaveStatus.textContent = `Player added: ${name}`;
+  playerForm.reset();
+
+  await loadPlayers();
+  resetParticipantCount();
+  renderPlacementSelectors(getSelectedParticipantCount());
+  await refreshDashboard();
+}
+
 async function submitGame(event) {
   event.preventDefault();
 
-  const sessionResult = await supabase.auth.getSession();
-  if (!sessionResult.data.session) {
-    saveStatus.textContent = "Sign in as admin first.";
-    return;
-  }
+  const session = await ensureAdminOrFail(saveStatus);
+  if (!session) return;
 
   const playedAt = document.getElementById("playedAt").value;
   const mapName = document.getElementById("mapName").value.trim();
@@ -181,7 +235,7 @@ async function submitGame(event) {
       played_at: playedAt,
       map_name: mapName,
       replay_url: replayUrl,
-      created_by: sessionResult.data.session.user.email || "admin",
+      created_by: session.user.email || "admin",
     })
     .select("id")
     .single();
@@ -205,7 +259,7 @@ async function submitGame(event) {
 
   saveStatus.textContent = "Game saved.";
   gameForm.reset();
-  participantCountSelect.value = String(players.length);
+  resetParticipantCount();
   renderPlacementSelectors(getSelectedParticipantCount());
 
   await refreshDashboard();
